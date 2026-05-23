@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RetroVault — Game Inventory</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="header-logo">
+      <span class="logo-icon">🎮</span>
+      <span class="logo-text">RetroVault</span>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill" id="stat-owned">
+        <span class="stat-label">Owned</span>
+        <span class="stat-value" id="count-owned">0</span>
+      </div>
+      <div class="stat-pill" id="stat-wishlist">
+        <span class="stat-label">Wishlist</span>
+        <span class="stat-value" id="count-wishlist">0</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">Value</span>
+        <span class="stat-value" id="count-value">$0</span>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="openModal()">+ Add Game</button>
+  </header>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search" placeholder="Search games..." oninput="debounceLoad()">
+    </div>
+    <select id="platform-filter" onchange="loadGames()">
+      <option value="">All Platforms</option>
+    </select>
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-owned="" onclick="setOwnedFilter(this, '')">All</button>
+      <button class="filter-tab" data-owned="true" onclick="setOwnedFilter(this, 'true')">✅ Owned</button>
+      <button class="filter-tab" data-owned="false" onclick="setOwnedFilter(this, 'false')">❤️ Wishlist</button>
+    </div>
+    <div class="sort-wrap">
+      <select id="sort-by" onchange="loadGames()">
+        <option value="title">Title</option>
+        <option value="platform">Platform</option>
+        <option value="release_year">Year</option>
+        <option value="estimated_value">Value</option>
+        <option value="created_at">Date Added</option>
+      </select>
+      <button class="sort-dir" id="sort-dir" onclick="toggleSortDir()" title="Toggle sort direction">↑</button>
+    </div>
+  </div>
+
+  <main id="game-grid">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🕹️</div>
+      <h2>No games yet</h2>
+      <p>Add your first game by clicking <strong>+ Add Game</strong><br>and uploading a photo of the cartridge, box, or disc.</p>
+    </div>
+  </main>
+
+  <!-- Modal Overlay -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="overlayClick(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Add Game</h2>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-tabs" id="modal-tabs">
+        <button class="mtab active" data-tab="photo" onclick="switchTab(this, 'photo')">📷 Photo ID</button>
+        <button class="mtab" data-tab="manual" onclick="switchTab(this, 'manual')">✏️ Manual</button>
+      </div>
+
+      <!-- Photo Tab -->
+      <div id="tab-photo" class="tab-content">
+        <div id="drop-zone" class="drop-zone" onclick="document.getElementById('photo-input').click()"
+             ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+          <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
+          <div class="drop-icon" id="drop-icon">📸</div>
+          <p class="drop-main" id="drop-main">Drag &amp; drop or click to upload</p>
+          <p class="drop-sub" id="drop-sub">Photo of cartridge, box, or disc</p>
+        </div>
+        <img id="photo-preview" class="photo-preview hidden" alt="Preview">
+        <div id="identify-actions" class="hidden">
+          <button class="btn-identify" onclick="identifyGame()">🔍 Identify Game</button>
+          <button class="btn-ghost" onclick="clearPhoto()">Clear</button>
+        </div>
+        <div id="identify-loading" class="identify-loading hidden">
+          <div class="spinner"></div>
+          <span>Analyzing photo with Claude AI…</span>
+        </div>
+        <div id="identify-result" class="identify-result hidden">
+          <div class="confidence-badge" id="confidence-badge"></div>
+          <p id="identify-notes" class="identify-notes hidden"></p>
+        </div>
+      </div>
+
+      <!-- Form (shared between photo and manual tabs) -->
+      <div id="game-form" class="game-form">
+        <div class="form-row">
+          <label>Title <span class="req">*</span></label>
+          <input id="f-title" type="text" placeholder="e.g. Super Mario Bros.">
+        </div>
+        <div class="form-row">
+          <label>Platform <span class="req">*</span></label>
+          <input id="f-platform" type="text" placeholder="e.g. NES, SNES, PS1">
+        </div>
+        <div class="form-row-split">
+          <div class="form-row">
+            <label>Release Year</label>
+            <input id="f-year" type="number" placeholder="e.g. 1985" min="1970" max="2010">
+          </div>
+          <div class="form-row">
+            <label>Est. Value (USD)</label>
+            <div class="value-row">
+              <input id="f-value" type="number" placeholder="e.g. 24.99" step="0.01" min="0">
+              <button class="btn-lookup" id="lookup-btn" type="button" onclick="lookupValue()">Look up</button>
+            </div>
+            <span class="value-info hidden" id="value-info"></span>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Status</label>
+          <div class="status-toggle">
+            <button class="status-btn active" data-owned="true" onclick="setStatus(this)">✅ Owned</button>
+            <button class="status-btn" data-owned="false" onclick="setStatus(this)">❤️ Wishlist</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Notes</label>
+          <textarea id="f-notes" placeholder="Condition, variant, etc." rows="2"></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+          <button class="btn-primary" onclick="saveGame()" id="save-btn">Save Game</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
