@@ -4,15 +4,19 @@ Identify retro game cartridges, boxes, and discs using AI and manage your collec
 
 ## Setup
 
-1. **Set your Anthropic API key:**
+1. **Install dependencies** (first time only):
    ```
-   set ANTHROPIC_API_KEY=your-api-key-here
+   python -m pip install -r requirements.txt
    ```
 
-2. **Install dependencies** (first time only):
+2. **Set your Anthropic API key:**
+
+   Copy the example env file and add your real key:
    ```
-   python -m pip install fastapi "uvicorn[standard]" anthropic python-multipart
+   copy .env.example .env
    ```
+   Then edit `.env` so it reads `ANTHROPIC_API_KEY=sk-ant-...`. The `.env`
+   file is gitignored, so your key is never committed.
 
 3. **Start the server:**
    ```

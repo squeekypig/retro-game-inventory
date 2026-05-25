@@ -9,9 +9,13 @@ from anthropic import Anthropic
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from dotenv import load_dotenv
 from pydantic import BaseModel
 
 from database import get_db, init_db, row_to_dict
+
+# Load ANTHROPIC_API_KEY (and any other vars) from a local .env file if present.
+load_dotenv()
 
 app = FastAPI(title="Retro Game Inventory")
 
