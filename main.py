@@ -322,6 +322,16 @@ async def lookup_value(req: ValueLookup):
         raise HTTPException(status_code=422, detail="Could not parse value response")
 
 
+class NoCacheStaticFiles(StaticFiles):
+    """Serve static files with Cache-Control: no-cache so browsers always
+    revalidate (cheap 304s via ETag) and pick up updates immediately, instead
+    of serving stale JS/CSS heuristically cached from an older build."""
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 # Serve static files last so API routes take precedence
 STATIC_DIR = Path(__file__).parent / "static"
-app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True))
+app.mount("/", NoCacheStaticFiles(directory=str(STATIC_DIR), html=True))
