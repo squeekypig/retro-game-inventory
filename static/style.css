@@ -511,3 +511,18 @@ main {
   .controls { gap: 8px; }
   main { padding: 16px; gap: 12px; }
 }
+
+/* ── Duplicate-copy warning ─────────────────────── */
+.dup-warning {
+  background: rgba(245, 158, 11, .12);
+  border: 1px solid var(--yellow);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.dup-warning strong { color: var(--yellow); font-size: 0.85rem; }
+.dup-warning span { color: var(--muted); }
+.dup-warning.hidden { display: none; }

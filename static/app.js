@@ -220,6 +220,7 @@ function clearPhoto() {
   document.getElementById('identify-actions').classList.add('hidden');
   document.getElementById('identify-loading').classList.add('hidden');
   document.getElementById('identify-result').classList.add('hidden');
+  resetDupWarning();
 }
 
 function compressImage(file) {
@@ -245,6 +246,40 @@ function compressImage(file) {
     img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
     img.src = url;
   });
+}
+
+async function checkForDuplicates(title, platform) {
+  if (!title || !platform) { resetDupWarning(); return; }
+  let res;
+  try {
+    res = await api('/api/duplicate-check?' + new URLSearchParams({ title, platform }));
+  } catch (_) {
+    resetDupWarning();
+    return;
+  }
+  if (!res.count) { resetDupWarning(); return; }
+
+  let detail;
+  if (res.owned > 0) {
+    detail = `you own ${res.owned} cop${res.owned === 1 ? 'y' : 'ies'}`;
+    if (res.wishlist > 0) detail += ` and have ${res.wishlist} on your wishlist`;
+  } else {
+    detail = `this is on your wishlist (${res.wishlist})`;
+  }
+
+  const warn = document.getElementById('dup-warning');
+  warn.innerHTML =
+    `<strong>⚠️ Already in your collection</strong>` +
+    `<span>${esc(title)} (${esc(platform)}) — ${detail}. Saving will add another copy.</span>`;
+  warn.classList.remove('hidden');
+  document.getElementById('save-btn').textContent = '➕ Add Another Copy';
+}
+
+function resetDupWarning() {
+  const warn = document.getElementById('dup-warning');
+  warn.classList.add('hidden');
+  warn.innerHTML = '';
+  document.getElementById('save-btn').textContent = 'Save Game';
 }
 
 async function identifyGame() {
@@ -289,6 +324,7 @@ async function identifyGame() {
     }
 
     document.getElementById('identify-result').classList.remove('hidden');
+    checkForDuplicates(result.title, result.platform);
   } catch (e) {
     alert('Could not identify game: ' + e.message);
   } finally {
@@ -370,6 +406,7 @@ async function editGame(id) {
   try {
     const g = await api(`/api/games/${id}`);
     editingId = id;
+    resetDupWarning();
     document.getElementById('modal-title').textContent = 'Edit Game';
     document.getElementById('modal-tabs').classList.add('hidden');
     document.getElementById('tab-photo').classList.add('hidden');
