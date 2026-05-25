@@ -278,6 +278,19 @@ def get_stats():
     return {"total": total, "owned": owned, "wishlist": wishlist, "collection_value": round(value, 2)}
 
 
+@app.get("/api/duplicate-check")
+def duplicate_check(title: str, platform: str):
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT owned FROM games "
+        "WHERE title = ? COLLATE NOCASE AND platform = ? COLLATE NOCASE",
+        (title, platform),
+    ).fetchall()
+    conn.close()
+    owned = sum(1 for r in rows if r["owned"])
+    return {"count": len(rows), "owned": owned, "wishlist": len(rows) - owned}
+
+
 @app.post("/api/lookup-value")
 async def lookup_value(req: ValueLookup):
     prompt = (
