@@ -95,11 +95,26 @@ function renderGames(games) {
     return;
   }
 
-  grid.innerHTML = games.map(g => `
+  // Count copies by title+platform (case-insensitive) to flag duplicates.
+  const copyCounts = {};
+  for (const g of games) {
+    const key = (g.title + '|' + g.platform).toLowerCase();
+    copyCounts[key] = (copyCounts[key] || 0) + 1;
+  }
+
+  grid.innerHTML = games.map(g => {
+    const copies = copyCounts[(g.title + '|' + g.platform).toLowerCase()];
+    const copiesBadge = copies > 1
+      ? `<span class="copies-badge" title="${copies} copies in your collection">📦 ×${copies}</span>`
+      : '';
+    return `
     <div class="game-card" data-id="${g.id}">
       <div class="card-top">
         <span class="platform-badge" style="background:${getPlatformColor(g.platform)}">${esc(g.platform)}</span>
-        <span class="owned-badge ${g.owned ? 'owned' : 'wishlist'}">${g.owned ? '✅ Owned' : '❤️ Wishlist'}</span>
+        <div class="card-badges">
+          ${copiesBadge}
+          <span class="owned-badge ${g.owned ? 'owned' : 'wishlist'}">${g.owned ? '✅ Owned' : '❤️ Wishlist'}</span>
+        </div>
       </div>
       <div class="card-title">${esc(g.title)}</div>
       <div class="card-meta">
@@ -111,8 +126,8 @@ function renderGames(games) {
         <button class="btn-edit" onclick="editGame(${g.id})">✏️ Edit</button>
         <button class="btn-delete" onclick="deleteGame(${g.id}, '${esc(g.title).replace(/'/g, "\\'")}')">🗑️ Delete</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function updateStats(stats) {

@@ -526,3 +526,15 @@ main {
 .dup-warning strong { color: var(--yellow); font-size: 0.85rem; }
 .dup-warning span { color: var(--muted); }
 .dup-warning.hidden { display: none; }
+
+/* ── Multi-copy badge ───────────────────────────── */
+.card-badges { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.copies-badge {
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+  background: var(--accent-dim);
+  color: #c4b5fd;
+  white-space: nowrap;
+}
