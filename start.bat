@@ -1,5 +1,5 @@
 @echo off
-set ANTHROPIC_API_KEY=your-api-key-here
+REM The Anthropic API key is loaded from the gitignored .env file (see .env.example).
 echo Starting RetroVault...
 echo Open http://localhost:8000 in your browser
 echo Press Ctrl+C to stop

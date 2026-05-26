@@ -210,6 +210,7 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -510,4 +511,43 @@ main {
   .header-stats { order: 3; width: 100%; justify-content: flex-start; }
   .controls { gap: 8px; }
   main { padding: 16px; gap: 12px; }
+
+  /* Larger touch targets (~44px) */
+  .card-actions button { padding: 10px; }
+  .filter-tab { padding: 9px 14px; }
+  .sort-dir { width: 40px; height: 40px; }
+  .mtab { padding: 11px 16px; }
+
+  /* Modal fits small screens */
+  .modal { padding: 16px; max-height: 95vh; }
+
+  /* Stack Year / Est. Value */
+  .form-row-split { grid-template-columns: 1fr; }
+}
+
+/* ── Duplicate-copy warning ─────────────────────── */
+.dup-warning {
+  background: rgba(245, 158, 11, .12);
+  border: 1px solid var(--yellow);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.dup-warning strong { color: var(--yellow); font-size: 0.85rem; }
+.dup-warning span { color: var(--muted); }
+.dup-warning.hidden { display: none; }
+
+/* ── Multi-copy badge ───────────────────────────── */
+.card-badges { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.copies-badge {
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+  background: var(--accent-dim);
+  color: #c4b5fd;
+  white-space: nowrap;
 }
